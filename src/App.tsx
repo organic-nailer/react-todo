@@ -10,14 +10,18 @@ type AppProps = {
 };
 
 type AppState = {
-  tasks: TodoData[]
+  tasks: TodoData[],
+  filter: string
 };
+
+const FILTER_NAMES = ["All", "Active", "Completed"];
 
 class App extends React.Component<AppProps, AppState> {
   constructor(props: AppProps) {
     super(props);
     this.state = {
-      tasks: props.tasks
+      tasks: props.tasks,
+      filter: FILTER_NAMES[0]
     };
   }
 
@@ -31,7 +35,7 @@ class App extends React.Component<AppProps, AppState> {
 
   toggleTaskCompleted = (id: string) => {
     const updatedTasks = this.state.tasks.map(task => {
-      if(id == task.id) return {...task, completed: !task.completed };
+      if (id == task.id) return { ...task, completed: !task.completed };
       return task;
     });
     this.setState({
@@ -46,8 +50,41 @@ class App extends React.Component<AppProps, AppState> {
     });
   };
 
+  editTask = (id: string, newName: string) => {
+    const editedTaskList = this.state.tasks.map(task => {
+      if (id == task.id) return { ...task, name: newName };
+      return task;
+    });
+    this.setState({
+      tasks: editedTaskList
+    });
+  }
+
+  filterSelected = (name: string) => {
+    this.setState({
+      filter: name
+    });
+  }
+
   render() {
-    const taskList = this.state.tasks.map(task => (
+    const filterList = FILTER_NAMES.map(name => (
+      <FilterButton
+        key={name}
+        name={name}
+        pressed={name === this.state.filter}
+        filterSelected={this.filterSelected}
+      />
+    ));
+    const taskList = this.state.tasks
+    .filter(t => {
+      switch(this.state.filter) {
+        case "All": return true
+        case "Active": return !t.completed
+        case "Completed": return t.completed
+        default: return false
+      }
+    })
+    .map(task => (
       <Todo
         name={task.name}
         completed={task.completed}
@@ -55,6 +92,7 @@ class App extends React.Component<AppProps, AppState> {
         key={task.id}
         toggleTaskCompleted={this.toggleTaskCompleted}
         deleteTask={this.deleteTask}
+        editTask={this.editTask}
       />
     ));
     const tasksNoun = taskList.length !== 1 ? 'tasks' : "task";
@@ -64,9 +102,7 @@ class App extends React.Component<AppProps, AppState> {
         <h1>TodoMatic</h1>
         <Form addTask={this.addTask} />
         <div className="filters btn-group stack-exception">
-          <FilterButton name="all" pressed={true} />
-          <FilterButton name="Active" pressed={false} />
-          <FilterButton name="Completed" pressed={false} />
+          {filterList}
         </div>
         <h2 id="list-heading">
           {headingText}
