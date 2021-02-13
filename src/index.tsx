@@ -1,12 +1,24 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
+import './index.css';
+
+export type TodoData = {
+  id: string,
+  name: string,
+  completed: boolean
+};
+
+const TodoDataList: TodoData[] = [
+  { id: "todo-0", name: "Eat", completed: true },
+  { id: "todo-1", name: "Sleep", completed: false },
+  { id: "todo-2", name: "Repeat", completed: false },
+];
 
 ReactDOM.render(
   <React.StrictMode>
-    <App />
+    <App tasks={TodoDataList} />
   </React.StrictMode>,
   document.getElementById('root')
 );
