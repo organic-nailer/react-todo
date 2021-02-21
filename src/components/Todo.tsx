@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 
 type TodoProps = {
     name: string,
@@ -12,6 +12,20 @@ type TodoProps = {
 export function Todo(props: TodoProps) {
     const [isEditing, setEditing] = useState(false);
     const [newName, setNewName] = useState("");
+    const editFieldRef = useRef<HTMLInputElement>(null);
+    const editButtonRef = useRef<HTMLButtonElement>(null);
+    function usePrevious(value: boolean) {
+        const ref = useRef<boolean>();
+        useEffect(() => {
+            ref.current = value;
+        });
+        return ref.current;
+    }
+    const wasEditing = usePrevious(isEditing);
+    useEffect(() => {
+        if(!wasEditing && isEditing) editFieldRef.current?.focus();
+        if(wasEditing && !isEditing) editButtonRef.current?.focus();
+    }, [isEditing, wasEditing]);
     function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
         setNewName(e.target.value);
     }
@@ -29,7 +43,13 @@ export function Todo(props: TodoProps) {
                 <label className="todo-label" htmlFor={props.id}>
                     New name for {props.name}
                 </label>
-                <input id={props.id} className="todo-text" type="text" onChange={handleChange}/>
+                <input
+                    id={props.id}
+                    className="todo-text"
+                    type="text"
+                    onChange={handleChange}
+                    ref={editFieldRef}
+                />
             </div>
             <div className="btn-group">
                 <button type="button" className="btn todo-cancel" onClick={() => setEditing(false)}>
@@ -55,7 +75,7 @@ export function Todo(props: TodoProps) {
                 <label className="todo-label" htmlFor="todo-0">{props.name}</label>
             </div>
             <div className="btn-group">
-                <button type="button" className="btn" onClick={() => setEditing(true)}>
+                <button type="button" className="btn" onClick={() => setEditing(true)} ref={editButtonRef}>
                     Edit <span className="visually-hidden">{props.name}</span>
                 </button>
                 <button type="button" className="btn btn__danger" onClick={() => props.deleteTask(props.id)}>
